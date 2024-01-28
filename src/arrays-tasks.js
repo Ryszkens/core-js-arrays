@@ -205,8 +205,8 @@ insertItem([1, 3, 4, 5], 2, 1);
  *    getHead([ 'a', 'b', 'c', 'd'], 3) => [ 'a', 'b', 'c' ]
  *    getHead([ 'a', 'b', 'c', 'd'], 0) => []
  */
-function getHead(/* arr, n */) {
-  throw new Error('Not implemented');
+function getHead(arr, n) {
+  return arr.slice(0, n);
 }
 
 /**
@@ -220,8 +220,8 @@ function getHead(/* arr, n */) {
  *    getTail([ 'a', 'b', 'c', 'd'], 3) => [ 'b', 'c', 'd' ]
  *    getTail([ 'a', 'b', 'c', 'd'], 0) => []
  */
-function getTail(/* arr, n */) {
-  throw new Error('Not implemented');
+function getTail(arr, n) {
+  return arr.slice(arr.length - n, arr.length);
 }
 
 /**
@@ -236,8 +236,8 @@ function getTail(/* arr, n */) {
  *    doubleArray([0, 1, 2, 3, 4, 5]) => [0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5]
  *    doubleArray([]) => []
  */
-function doubleArray(/* arr */) {
-  throw new Error('Not implemented');
+function doubleArray(arr) {
+  return arr.concat(arr);
 }
 
 /**
@@ -285,8 +285,14 @@ distinct([1, 2, 3, 3, 2, 1]);
  *    createNDimensionalArray(4, 2) => [[[[0, 0], [0, 0]], [[0, 0], [0, 0]]], [[[0, 0], [0, 0]], [[0, 0], [0, 0]]]]
  *    createNDimensionalArray(1, 1) => [0]
  */
-function createNDimensionalArray(/* n, size */) {
-  throw new Error('Not implemented');
+function createNDimensionalArray(n, size) {
+  if (n === 1) {
+    return new Array(size).fill(0);
+  }
+
+  return Array.from({ length: size }).map(() =>
+    createNDimensionalArray(n - 1, size)
+  );
 }
 
 /**
@@ -322,11 +328,9 @@ flattenArray([1, [2, [3, 4], 5], 6]);
  *   selectMany(['one','two','three'], (x) => x.split('')) =>   ['o','n','e','t','w','o','t','h','r','e','e']
  */
 function selectMany(arr, childrenSelector) {
-  return arr.reduce((result, element) => {
-    return result.concat(childrenSelector(element));
-  }, []);
+  return arr.flatMap(childrenSelector);
 }
-selectMany(['one', 'two', 'three'], (x) => x.split(''));
+
 /**
  * Every month, you record your income and expenses.
  * Expenses may be greater than income.
@@ -533,26 +537,25 @@ findCommonElements([1, 2, 3], [2, 3, 4]);
  *    findLongestIncreasingSubsequence([3, 10, 2, 1, 20]) => 2
  *    findLongestIncreasingSubsequence([50, 3, 10, 7, 40, 80]) => 3
  */
-function findLongestIncreasingSubsequence(/* nums */) {
-  // return nums
-  //   .reduce((dp, currentNum) => {
-  //     const { length } = dp.length;
+function findLongestIncreasingSubsequence(nums) {
+  let result = 0;
+  let localAccumulator = 0;
 
-  //     const maxLengthAtIndex = Array.from({ length }, (_, i) => {
-  //       if (nums[i] < currentNum) {
-  //         return dp[i] + 1;
-  //       }
-  //       return 1;
-  //     });
+  nums.map((num, index) => {
+    const previous = nums[index - 1] || Infinity;
 
-  //     const maxLength = Math.max(...maxLengthAtIndex, 1);
+    if (num > previous) {
+      localAccumulator += 1;
+    } else {
+      localAccumulator = 0;
+    }
 
-  //     dp.push(maxLength);
+    result = Math.max(result, localAccumulator);
 
-  //     return dp;
-  //   }, [])
-  //   .reduce((max, length) => Math.max(max, length), 0);
-  throw new Error('Not implemented');
+    return num;
+  });
+
+  return result + 1;
 }
 
 /**
@@ -587,8 +590,9 @@ propagateItemsByPositionIndex([]);
  *    shiftArray(['a', 'b', 'c', 'd'], -1) => ['b', 'c', 'd', 'a']
  *    shiftArray([10, 20, 30, 40, 50], -3) => [40, 50, 10, 20, 30]
  */
-function shiftArray(/* arr, n */) {
-  throw new Error('Not implemented');
+function shiftArray(arr, n) {
+  const pivotIndex = Math.abs(n) + (n >= 0 ? 1 : 0);
+  return arr.splice(pivotIndex, arr.length).concat(arr.slice(0, pivotIndex));
 }
 
 /**
@@ -605,21 +609,22 @@ function shiftArray(/* arr, n */) {
  *   sortDigitNamesByNumericOrder([ 'one','one','one','zero' ]) => [ 'zero','one','one','one' ]
  */
 function sortDigitNamesByNumericOrder(arr) {
-  const digitOrder = [
-    'zero',
-    'one',
-    'two',
-    'three',
-    'four',
-    'five',
-    'six',
-    'seven',
-    'eight',
-    'nine',
-  ];
+  const sortMap = {
+    zero: 0,
+    one: 1,
+    two: 2,
+    three: 3,
+    four: 4,
+    five: 5,
+    six: 6,
+    seven: 7,
+    eight: 8,
+    nine: 9,
+  };
 
-  return arr.sort((a, b) => digitOrder.indexOf(a) - digitOrder.indexOf(b));
+  return arr.sort((a, b) => sortMap[a] - sortMap[b]);
 }
+
 sortDigitNamesByNumericOrder([]);
 /**
  * Swaps the head and tail of the specified array:
@@ -640,8 +645,14 @@ sortDigitNamesByNumericOrder([]);
  *   swapHeadAndTail([]) => []
  *
  */
-function swapHeadAndTail(/* arr */) {
-  throw new Error('Not implemented');
+function swapHeadAndTail(arr) {
+  const pivotIndex = Math.trunc(arr.length / 2);
+  const halfPivotedArr =
+    arr.length % 2 === 0
+      ? arr.splice(pivotIndex, arr.length)
+      : arr.splice(pivotIndex + 1, arr.length).concat(arr.at(pivotIndex));
+
+  return halfPivotedArr.concat(arr.slice(0, pivotIndex));
 }
 
 module.exports = {
